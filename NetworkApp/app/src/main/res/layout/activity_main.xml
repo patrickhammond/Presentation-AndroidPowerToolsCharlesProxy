@@ -12,5 +12,12 @@
         android:id="@+id/view_find_zen"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Find Zen..."/>
+        android:text="Find Zen from the source..."/>
+
+    <Button
+        android:id="@+id/view_find_zen_proxy"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Find Zen through a middle man..."/>
 </LinearLayout>
