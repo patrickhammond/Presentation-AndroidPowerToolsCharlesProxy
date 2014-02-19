@@ -6,11 +6,8 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.common.io.CharStreams;
 import com.squareup.okhttp.OkHttpClient;
 
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
 import java.security.cert.X509Certificate;
 
 import javax.net.ssl.HostnameVerifier;
@@ -25,11 +22,6 @@ import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 import retrofit.client.OkClient;
 import retrofit.client.Response;
-import retrofit.converter.ConversionException;
-import retrofit.converter.Converter;
-import retrofit.mime.TypedByteArray;
-import retrofit.mime.TypedInput;
-import retrofit.mime.TypedOutput;
 
 public class MainActivity extends Activity {
 
@@ -43,7 +35,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Not going through a reverse proxy
+        // Adapter not going through a reverse proxy
         directRestAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://api.github.com")
                 .setConverter(new StringConverter())
@@ -51,10 +43,11 @@ public class MainActivity extends Activity {
         directZenService = directRestAdapter.create(ZenService.class);
 
         OkHttpClient proxyClient = new OkHttpClient();
-        //setupSSLTrustAll(proxyClient);
+        //setupSSLToTrustEverything(proxyClient);
         //proxyClient.setReadTimeout(5, TimeUnit.SECONDS);
 
-        // Going through a reverse proxy listening on the localhost:3001 on the emulator's host
+        // Adapter going through a reverse proxy listening on localhost:3001
+        // Emulator maps 10.0.2.2 to the physical localhost interface
         proxyRestAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://10.0.2.2:3001")
                 .setClient(new OkClient(proxyClient))
@@ -98,7 +91,7 @@ public class MainActivity extends Activity {
     /**
      * If you ship this turned on in production bad things will happen to you...
      */
-    private void setupSSLTrustAll(OkHttpClient client) {
+    private void setupSSLToTrustEverything(OkHttpClient client) {
         try {
             client.setHostnameVerifier(new HostnameVerifier() {
                 public boolean verify(String string, SSLSession ssls) {
@@ -128,27 +121,6 @@ public class MainActivity extends Activity {
 
         } catch (Exception ex) {
             throw new IllegalStateException();
-        }
-    }
-
-    // Needed for the demo, but not important for the demo
-    public static class StringConverter implements Converter {
-        @Override
-        public Object fromBody(TypedInput body, Type type) throws ConversionException {
-            try {
-                return CharStreams.toString(new InputStreamReader(body.in(), "UTF-8"));
-            } catch (Exception ex) {
-                throw new ConversionException("Couldn't convert it to a string", ex);
-            }
-        }
-
-        @Override
-        public TypedOutput toBody(Object object) {
-            try {
-                return new TypedByteArray("text/plain", ((String) object).getBytes("UTF-8"));
-            } catch (Exception ex) {
-                throw new IllegalArgumentException();
-            }
         }
     }
 }
