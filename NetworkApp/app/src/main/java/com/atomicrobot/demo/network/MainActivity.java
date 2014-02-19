@@ -43,7 +43,7 @@ public class MainActivity extends Activity {
         directZenService = directRestAdapter.create(ZenService.class);
 
         OkHttpClient proxyClient = new OkHttpClient();
-        //setupSSLToTrustEverything(proxyClient);
+        setupSSLToTrustEverything(proxyClient);
         //proxyClient.setReadTimeout(5, TimeUnit.SECONDS);
 
         // Adapter going through a reverse proxy listening on localhost:3001
@@ -71,10 +71,22 @@ public class MainActivity extends Activity {
                 findZen(proxyZenService);
             }
         });
+
+        findViewById(R.id.view_load_imaginary_resource).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                proxyZenService.loadImaginaryResource(buildToastingCallback());
+            }
+        });
     }
 
     private void findZen(ZenService zenService) {
-        zenService.findZen(new Callback<String>() {
+        Callback<String> callback = buildToastingCallback();
+        zenService.findZen(callback);
+    }
+
+    private Callback<String> buildToastingCallback() {
+        return new Callback<String>() {
             @Override
             public void success(String zen, Response response) {
                 Toast.makeText(MainActivity.this, zen, Toast.LENGTH_LONG).show();
@@ -85,7 +97,7 @@ public class MainActivity extends Activity {
                 Toast.makeText(MainActivity.this, retrofitError.getMessage(), Toast.LENGTH_LONG).show();
                 Log.e("APP", "Network failure", retrofitError);
             }
-        });
+        };
     }
 
     /**
